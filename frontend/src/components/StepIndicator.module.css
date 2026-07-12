@@ -1,0 +1,74 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.stepGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--surface-strong);
+  color: var(--text-tertiary);
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.current {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.complete {
+  background: var(--accent-tint);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.label {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.labelCurrent {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.connector {
+  width: 32px;
+  height: 1.5px;
+  background: var(--border);
+  margin: 0 10px;
+}
+
+.connectorDone {
+  background: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .connector {
+    width: 16px;
+    margin: 0 6px;
+  }
+  .label {
+    display: none;
+  }
+  .labelCurrent {
+    display: inline;
+  }
+}
