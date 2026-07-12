@@ -1,181 +1,424 @@
-# GrowEasy — AI-Powered CSV Importer
+# GrowEasy AI CSV Importer
 
-Full-stack tool that ingests arbitrary CSV lead exports (Facebook Lead Ads, Google Ads, Excel, manual spreadsheets) and uses an LLM to map them onto a fixed 15-field GrowEasy CRM schema, with deterministic validation as a safety net against bad LLM output.
+An AI-powered CSV Importer built for the GrowEasy Software Developer Assignment.
 
-> **Submission note:** built as a take-home project. See `AUDIT.md` in this same folder for the full pre-submission code/security/performance review this README's "Known Limitations" section summarizes.
-
-```
-groweasy/
-├── backend/          Express + TypeScript API
-├── frontend/          Next.js (App Router) + TypeScript UI
-├── docker-compose.yml Local full-stack run via Docker
-├── render.yaml         Render deployment config (backend)
-└── AUDIT.md            Full engineering audit (code/security/perf/tests)
-```
+The application accepts CSV files from different sources (Facebook Lead Ads, Google Ads, Excel, CRM exports, manually created spreadsheets, etc.) and intelligently maps them into the GrowEasy CRM schema using a Large Language Model (LLM).
 
 ---
 
-## 1. Setup & Local Run
-
-### Prerequisites
-- Node.js ≥ 18
-- npm
-
-### Backend
-
-```bash
-cd backend
-cp .env.example .env      # defaults work out of the box — LLM_PROVIDER=mock
-npm install
-npm run dev                # http://localhost:4000
-```
-
-Verify: `curl http://localhost:4000/api/health` → `{"status":"ok","provider":"mock",...}`
+## Features
 
 ### Frontend
 
-In a second terminal:
+- Drag & Drop CSV upload
+- File picker upload
+- CSV preview before import
+- Responsive preview table
+- Sticky table headers
+- Horizontal & vertical scrolling
+- Import confirmation step
+- Progress indicator during AI processing
+- Import summary
+- Successfully imported records table
+- Skipped records table
+- Error handling
+- Dark Mode
 
-```bash
-cd frontend
-cp .env.example .env.local
-npm install
-npm run dev                # http://localhost:3000
+---
+
+### Backend
+
+- REST API built with Express + TypeScript
+- AI-powered CRM field mapping
+- OpenAI Provider
+- Groq Provider
+- Mock Provider (used for testing)
+- Intelligent prompt engineering
+- Batch processing
+- Retry support for retryable AI failures
+- CSV validation
+- CSV parsing fallback
+- Data sanitization
+- CRM schema validation
+- Formula Injection protection
+- Rate limiting
+- Structured logging
+- Health endpoint
+- Comprehensive error handling
+
+---
+
+## Tech Stack
+
+### Frontend
+
+- Next.js
+- React
+- TypeScript
+- CSS Modules
+
+### Backend
+
+- Node.js
+- Express
+- TypeScript
+
+### AI
+
+- OpenAI
+- Groq
+- Mock Provider (for testing)
+
+### Testing
+
+- Jest
+- Supertest
+
+### Deployment
+
+- Docker
+- Docker Compose
+- Render
+- Vercel
+
+---
+
+## Project Structure
+
+```
+groweasy/
+
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   │   ├── llm/
+│   │   │   ├── batchProcessor.ts
+│   │   │   ├── csvParser.ts
+│   │   │   └── validator.ts
+│   │   ├── types/
+│   │   ├── utils/
+│   │   └── __tests__/
+│   ├── Dockerfile
+│   └── package.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── lib/
+│   │   ├── services/
+│   │   └── types/
+│   ├── Dockerfile
+│   └── package.json
+│
+├── docker-compose.yml
+├── render.yaml
+├── AUDIT.md
+└── README.md
 ```
 
-Open **http://localhost:3000**, drop in a CSV, and walk through Upload → Preview → Confirm → Results.
+---
 
-### Running with Docker instead
+# CRM Fields
+
+The AI extracts the following fields:
+
+- created_at
+- name
+- email
+- country_code
+- mobile_without_country_code
+- company
+- city
+- state
+- country
+- lead_owner
+- crm_status
+- crm_note
+- data_source
+- possession_time
+- description
+
+---
+
+# AI Processing Flow
+
+```
+Upload CSV
+      │
+      ▼
+Parse CSV
+      │
+      ▼
+Preview Records
+      │
+      ▼
+Confirm Import
+      │
+      ▼
+Backend API
+      │
+      ▼
+Batch Processing
+      │
+      ▼
+LLM Mapping
+      │
+      ▼
+Validation
+      │
+      ▼
+Return CRM Records
+      │
+      ▼
+Display Results
+```
+
+---
+
+# Installation
+
+## Clone Repository
 
 ```bash
-docker compose up --build
-```
-Frontend on :3000, backend on :4000. Set `LLM_PROVIDER`, `GROQ_API_KEY`, etc. via a `.env` file next to `docker-compose.yml` or your shell environment before running.
+git clone https://github.com/your-username/groweasy-csv-importer.git
 
-### Running tests
+cd groweasy-csv-importer
+```
+
+---
+
+# Backend Setup
 
 ```bash
 cd backend
+
 npm install
-npm test
 ```
-Covers CSV parsing edge cases, validator business rules (enum enforcement, date normalization, skip rule, multi-value merge, CSV-injection sanitization), and an integration test of `POST /api/import` against the mock provider (no network/API key required).
+
+Copy
+
+```
+.env.example
+```
+
+to
+
+```
+.env
+```
+
+Example
+
+```
+OPENAI_API_KEY=your_key
+
+GROQ_API_KEY=your_key
+
+LLM_PROVIDER=openai
+
+PORT=5000
+```
+
+Run
+
+```bash
+npm run dev
+```
+
+Backend
+
+```
+http://localhost:5000
+```
 
 ---
 
-## 2. Environment Variables
+# Frontend Setup
 
-### Backend (`backend/.env`)
+```bash
+cd frontend
 
-| Variable | Required | Default | Notes |
-|---|---|---|---|
-| `PORT` | no | `4000` | |
-| `CORS_ORIGIN` | **yes in production** | `http://localhost:3000` | Set to the deployed frontend URL |
-| `MAX_BODY_SIZE` | no | `15mb` | Express JSON body limit |
-| `MAX_ROWS` | no | `50000` | Hard cap on rows per import |
-| `RATE_LIMIT_PER_MINUTE` | no | `20` | Per-IP requests/minute to `/api/import` |
-| `LOG_LEVEL` | no | `info` | Set `debug` for verbose validator logs |
-| `LLM_PROVIDER` | no | `mock` | `mock` \| `groq` \| `openai` |
-| `LLM_REQUEST_TIMEOUT_MS` | no | `30000` | Hard timeout per LLM batch call |
-| `GROQ_API_KEY` | only if `LLM_PROVIDER=groq` | — | **Never commit this file with a real key filled in** |
-| `GROQ_MODEL` | no | `llama-3.3-70b-versatile` | |
-| `OPENAI_API_KEY` | only if `LLM_PROVIDER=openai` | — | Same caution as above |
-| `OPENAI_MODEL` | no | `gpt-4o-mini` | |
+npm install
+```
 
-### Frontend (`frontend/.env.local`)
+Copy
 
-| Variable | Required | Default |
-|---|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | yes | `http://localhost:4000` |
+```
+.env.example
+```
 
-> `NEXT_PUBLIC_*` variables are baked into the client bundle at **build time**. When deploying, set this in your host's dashboard (Vercel project settings) or as a Docker build `ARG` — setting it only as a runtime env var will not work.
+to
+
+```
+.env.local
+```
+
+Example
+
+```
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+Run
+
+```bash
+npm run dev
+```
+
+Frontend
+
+```
+http://localhost:3000
+```
 
 ---
 
-## 3. Architecture Overview
+# Docker
 
-```
-Browser → client-side CSV parse (PapaParse, preview only, no AI call)
-        → user clicks "Confirm Import"
-        → POST /api/import (full parsed rows as JSON)
-        → backend chunks rows into batches (25 rows default)
-        → batches dispatched to LLM provider, 4 concurrent, retry+backoff on failure
-        → every LLM-mapped row re-validated in code (enums, dates, skip rule,
-          multi-value split, CSV-injection sanitization) — LLM output is
-          never trusted as final
-        → structured JSON response { imported, skipped, meta }
-        → tabbed, paginated results table in the browser
+Build
+
+```bash
+docker compose build
 ```
 
-**LLM provider abstraction:** `backend/src/services/llm/LLMProvider.ts` defines the interface; `MockProvider` (rule-based, offline), `GroqProvider`, and `OpenAIProvider` implement it. Swapping providers is a one-line env var change (`LLM_PROVIDER`) — nothing else in the codebase needs to know which is active.
+Run
 
-**Why stateless (no DB):** each import is a self-contained request/response. See `AUDIT.md` §Performance/Architecture for when persistence would become necessary (import history, async job queue for very large files, deduplication).
+```bash
+docker compose up
+```
+
+Stop
+
+```bash
+docker compose down
+```
 
 ---
 
-## 4. API Documentation
+# API
 
-### `POST /api/import`
+## POST
 
-**Request body:**
+```
+POST /api/import
+```
+
+Request
+
 ```json
 {
   "fileName": "leads.csv",
-  "headers": ["Full Name", "Email", "Phone"],
+  "headers": ["Name", "Email"],
   "rows": [
-    { "Full Name": "Jane Doe", "Email": "jane@x.com", "Phone": "9876543210" }
+    {
+      "Name": "John",
+      "Email": "john@example.com"
+    }
   ]
 }
 ```
 
-**200 response:**
+Response
+
 ```json
 {
   "success": true,
-  "meta": {
-    "totalRows": 1,
-    "totalImported": 1,
-    "totalSkipped": 0,
-    "failedBatches": 0,
-    "processingTimeMs": 842,
-    "provider": "groq"
-  },
-  "imported": [ { "created_at": "...", "name": "Jane Doe", "email": "jane@x.com", "...": "..." } ],
-  "skipped": [ { "rowIndex": 3, "reason": "missing_email_and_mobile", "rawRow": { "...": "..." } } ]
+  "meta": {},
+  "imported": [],
+  "skipped": []
 }
 ```
 
-**Error responses:**
+---
 
-| Status | `error` code | Cause |
-|---|---|---|
-| 400 | `invalid_csv` / `invalid_request` / `invalid_json` | Empty/malformed rows, bad JSON body |
-| 413 | `file_too_large` | Row count exceeds `MAX_ROWS`, or body exceeds `MAX_BODY_SIZE` |
-| 429 | `rate_limited` | Per-IP rate limit exceeded (see `retryAfterMs`) |
-| 500 | `internal_error` | Unexpected server error |
-| 404 | `not_found` | Unknown route |
+## GET
 
-Note: if individual LLM batches fail after retries, the endpoint still returns **200** with those rows reported under `skipped` (`reason: "batch_processing_failed"`) and `meta.failedBatches > 0` — a partial provider outage never fails the whole import.
+```
+GET /api/health
+```
 
-### `GET /api/health`
-Returns `{ status, provider, timestamp }`. Used by Docker/Render health checks.
+Returns
+
+```json
+{
+  "status": "ok",
+  "provider": "openai"
+}
+```
 
 ---
 
-## 5. Known Limitations
+# Running Tests
 
-- **No persistence.** Stateless request/response only — no import history, no deduplication against previously imported leads.
-- **Progress bar is an estimate**, not real per-batch telemetry — the backend returns one final response rather than streaming batch completion events (documented in `ProgressIndicator.tsx`).
-- **Results table uses pagination (50 rows/page), not virtualization.** Comfortably handles tens of thousands of rows without a rendering dependency; `react-window` is a documented drop-in upgrade if true single-scroll virtualization is needed.
-- **In-memory rate limiter** — fine for a single instance; needs a Redis-backed limiter behind a load balancer / multiple instances.
-- **File cap:** 10MB / 50,000 rows client-side, `MAX_ROWS` server-side (both configurable).
-- **CSV re-parsing on the backend (`csvParser.ts`) is currently unused in the live request path** — the frontend sends pre-parsed JSON rows. Kept as a safety net / alternate entry point for a raw-text upload API, documented so it isn't mistaken for dead code.
+Backend
 
-## 6. Bonus Features Implemented
+```bash
+cd backend
 
-- Pluggable LLM provider architecture (Mock / Groq / OpenAI) with a genuinely useful **rule-based offline mock** — not a stub — that exercises the entire pipeline (batching, retry, validation, skip rule, UI states) with zero API cost.
-- Exponential backoff + per-request timeout on every LLM call, with partial-failure handling so one bad batch never fails the whole import.
-- CSV/formula-injection sanitization on free-text fields, defending against a future "export to Excel" feature in the CRM.
-- Duplicate-CSV-header detection (silent data loss otherwise) and permissive-but-safe file-type validation (handles inconsistent browser MIME types for `.csv`).
-- Dockerized (multi-stage builds, health checks) with `docker-compose.yml`, plus ready-to-use Render and Vercel configs.
-- Jest unit + integration test suite, including an end-to-end API test using the mock provider (no live API key needed to run CI).
+npm test
+```
+
+---
+
+# Environment Variables
+
+Backend
+
+```
+OPENAI_API_KEY
+
+GROQ_API_KEY
+
+LLM_PROVIDER
+
+PORT
+
+MAX_ROWS
+
+MAX_BODY_SIZE
+
+RATE_LIMIT_PER_MINUTE
+
+CORS_ORIGIN
+```
+
+Frontend
+
+```
+NEXT_PUBLIC_API_URL
+```
+
+---
+
+# Security Features
+
+- Request validation
+- CSV validation
+- Formula Injection protection
+- Rate limiting
+- Structured error handling
+- Retry mechanism for retryable AI failures
+- Type-safe validation layer
+- Health monitoring endpoint
+
+---
+
+# Future Improvements
+
+- Streaming CSV parsing for very large files
+- Virtualized tables for millions of rows
+- Redis-backed distributed rate limiting
+- Authentication
+- Persistent import history
+- Background job queue
+- WebSocket-based live progress updates
+
+---
+
+# Author
+Vishal Kumar
