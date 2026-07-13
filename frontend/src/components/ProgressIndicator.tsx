@@ -44,7 +44,8 @@ export function ProgressIndicator({ totalRows, batchSize = 25 }: ProgressIndicat
         <div>
           <p className={styles.title}>Mapping your data to the CRM schema…</p>
           <p className={styles.subtitle}>
-            AI is processing your CSV. This usually takes a few seconds...
+            🤖 AI is mapping your CSV to the CRM schema...
+This usually takes 5–15 seconds depending on file size.
             {totalBatches === 1 ? "" : "es"}
           </p>
         </div>
