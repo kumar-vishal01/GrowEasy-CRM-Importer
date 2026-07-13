@@ -17,9 +17,9 @@ export interface BatchProcessorOptions {
 }
 
 export const DEFAULT_BATCH_OPTIONS: BatchProcessorOptions = {
-  batchSize: 25,
-  concurrencyLimit: 4,
-  maxRetries: 3,
+  batchSize: 10,
+  concurrencyLimit: 1,
+  maxRetries: 2,
   baseBackoffMs: 500,
 };
 
