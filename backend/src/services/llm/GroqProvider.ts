@@ -87,7 +87,7 @@ export class GroqProvider implements LLMProvider {
             const retryAfterHeader = response.headers.get("retry-after");
 
             const retryAfterMs = retryAfterHeader
-                ? Number(retryAfterHeader) * 1000
+                ? Math.min(Number(retryAfterHeader) * 1000, 10000)
                 : undefined;
 
             throw new LLMProviderError(
